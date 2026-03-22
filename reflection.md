@@ -7,10 +7,20 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+The initial UML design includes the 4 major components described in the readme file, which I have added as classes, and they are Owner, Pet, Schedule, and Scheduler. The attributes and responsibilities are as follows:
+
+Owner: name, preferences, available_time
+Pet: name, type of pet, pet care tasks
+Task: name, duration of task, priority
+Schedule: listing pet care tasks
+Scheduler: generating a schedule
+
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
+
+At this time, I have not made any changes as I included the core pieces for the apps function into the UML diagram initially. I will update this section if I make any changes as I progress through the project.
 
 ---
 

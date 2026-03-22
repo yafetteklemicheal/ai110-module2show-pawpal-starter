@@ -2,12 +2,14 @@
 
 ## 1. System Design
 
+The initial design needs to includes the 4 major components described in the readme file, and all the tasks detailed in what the final version of the app should look like. The app needs to allow users to add and update owner, pet, and task info. The app will need to generate a schedule that is within the constraints of the owners prefernces and available time.
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
-The initial UML design includes the 4 major components described in the readme file, which I have added as classes, and they are Owner, Pet, Schedule, and Scheduler. The attributes and responsibilities are as follows:
+I have added as classes, and they are Owner, Pet, Schedule, and Scheduler. The attributes and responsibilities are as follows:
 
 Owner: name, preferences, available_time
 Pet: name, type of pet, pet care tasks
@@ -20,7 +22,7 @@ Scheduler: generating a schedule
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
-At this time, I have not made any changes as I included the core pieces for the apps function into the UML diagram initially. I will update this section if I make any changes as I progress through the project.
+After reviewing the design, one major missing relationship was between the owner and pet class which did not ahve a way of associating which pet belonged to which owner. By adding a list of pets for each owner, we can have a way of adding, removing, and retrieving all the pets that belong to that specific owner.
 
 ---
 

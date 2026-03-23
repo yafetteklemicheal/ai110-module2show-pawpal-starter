@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 from typing import List, Dict, Optional
 
 
@@ -14,15 +15,42 @@ class Task:
     priority: str  # e.g., 'high', 'medium', 'low'
     category: str = 'general'  # e.g., 'walking', 'feeding', 'meds', 'grooming', 'enrichment'
     frequency: str = 'daily'  # e.g., 'daily', 'weekly', 'as-needed'
+    time_of_day: Optional[str] = None  # optional scheduled time in HH:MM format
+    due_date: Optional[date] = None  # next date task is due
     is_completed: bool = False
     
     def get_priority_value(self) -> int:
         """Returns numeric priority for comparison. Higher = more urgent."""
         return PRIORITY_RANK.get(self.priority, 1)
     
-    def mark_completed(self) -> None:
-        """Mark this task as completed."""
+    def mark_completed(self) -> Optional['Task']:
+        """Mark this task as completed and create next occurrence if recurring."""
         self.is_completed = True
+
+        if self.frequency not in ['daily', 'weekly']:
+            return None
+
+        if self.due_date is None:
+            next_due_date = date.today()
+        else:
+            next_due_date = self.due_date
+
+        if self.frequency == 'daily':
+            next_due_date += timedelta(days=1)
+        elif self.frequency == 'weekly':
+            next_due_date += timedelta(weeks=1)
+
+        next_task = Task(
+            name=self.name,
+            duration=self.duration,
+            priority=self.priority,
+            category=self.category,
+            frequency=self.frequency,
+            time_of_day=self.time_of_day,
+            due_date=next_due_date,
+            is_completed=False,
+        )
+        return next_task
     
     def set_priority(self, priority: str) -> None:
         """Update the priority of this task."""
@@ -161,8 +189,9 @@ class Scheduler:
             schedule.explanations["general"] = "No tasks to schedule."
             return schedule
         
-        # Sort tasks by priority (highest first)
+        # Sort tasks by priority (highest first), then by scheduled time (HH:MM if provided)
         sorted_tasks = self.prioritize_tasks(tasks)
+        sorted_tasks = self.sort_tasks_by_time(sorted_tasks)
         
         # Fit tasks into available time
         remaining_time = owner.available_time
@@ -217,6 +246,26 @@ class Scheduler:
             tasks,
             key=lambda t: (-t.get_priority_value(), t.duration)
         )
+
+    def sort_tasks_by_time(self, tasks: List[Task]) -> List[Task]:
+        """Sort tasks by time of day in HH:MM format. Tasks without a time go last.
+
+            Args:
+                tasks (List[Task]): The list of tasks to sort.
+
+            Returns:
+                List[Task]: Tasks sorted by scheduled time."""
+
+        def parse_time(task: Task):
+            if task.time_of_day is None:
+                return float('inf')
+            try:
+                hours, minutes = map(int, task.time_of_day.split(':'))
+                return hours * 60 + minutes
+            except Exception:
+                return float('inf')
+
+        return sorted(tasks, key=lambda t: parse_time(t))
     
     def get_all_tasks(self, owner: Owner) -> List[Task]:
         """Retrieve all tasks across all of owner's pets."""
@@ -224,6 +273,56 @@ class Scheduler:
         for pet in owner.get_pets():
             all_tasks.extend(pet.get_tasks())
         return all_tasks
+
+    def complete_task(self, owner: Owner, pet_name: str, task_name: str) -> Optional[Task]:
+        """Mark a task as complete for a pet and add a follow-up if recurring.
+
+            Args:
+                owner (Owner): The owner containing the pet.
+                pet_name (str): The name of the pet.
+                task_name (str): The name of the task to complete.
+
+            Returns:
+                Optional[Task]: The next recurring task, or None.
+
+            Raises:
+                ValueError: If the pet or task is not found."""
+        
+        pet = owner.get_pet_by_name(pet_name)
+        if not pet:
+            raise ValueError(f"Pet '{pet_name}' not found.")
+
+        task = pet.get_task_by_name(task_name)
+        if not task:
+            raise ValueError(f"Task '{task_name}' not found for {pet_name}.")
+
+        next_task = task.mark_completed()
+
+        if next_task is not None:
+            pet.add_task(next_task)
+
+        return next_task
+    
+    def filter_tasks(self, owner: Owner, completed: Optional[bool] = None, pet_name: Optional[str] = None) -> List[Task]:
+        """Filter tasks by completion status and/or pet name.
+
+            Args:
+                owner (Owner): The owner whose tasks are being filtered.
+                completed (Optional[bool]): True for completed, False for incomplete, None for all.
+                pet_name (Optional[str]): Filter by pet name, or None for all pets.
+
+            Returns:
+                List[Task]: A list of tasks matching the filter criteria."""
+        
+        filtered = []
+        for pet in owner.get_pets():
+            if pet_name is not None and pet.name != pet_name:
+                continue
+            for task in pet.get_tasks():
+                if completed is not None and task.is_completed != completed:
+                    continue
+                filtered.append(task)
+        return filtered
     
     def get_tasks_by_category(self, owner: Owner, category: str) -> List[Task]:
         """Get all tasks of a specific category across all pets."""
@@ -244,6 +343,46 @@ class Scheduler:
             summary += f"  {pet.name} ({pet.type}): {len(pet_tasks)} tasks, {total_time}min total\n"
         
         return summary
+
+    def detect_scheduling_conflicts(self, owner: Owner, pet_name: Optional[str] = None) -> List[str]:
+        """Detect tasks scheduled at the same time and return conflict warnings.
+
+            Args:
+                owner (Owner): The owner to check conflicts for.
+                pet_name (Optional[str]): Check a specific pet, or None for all pets.
+
+            Returns:
+                List[str]: Warning messages for each conflict found, or empty list if none."""
+        
+        warnings = []
+        time_slots = {}  # Maps time_of_day -> list of (pet_name, task_name) tuples
+
+        # Collect all tasks with scheduled times
+        if pet_name:
+            pet = owner.get_pet_by_name(pet_name)
+            if pet:
+                for task in pet.get_tasks():
+                    if task.time_of_day:
+                        if task.time_of_day not in time_slots:
+                            time_slots[task.time_of_day] = []
+                        time_slots[task.time_of_day].append((pet.name, task.name))
+        else:
+            # Check across all pets
+            for pet in owner.get_pets():
+                for task in pet.get_tasks():
+                    if task.time_of_day:
+                        if task.time_of_day not in time_slots:
+                            time_slots[task.time_of_day] = []
+                        time_slots[task.time_of_day].append((pet.name, task.name))
+
+        # Flag conflicts
+        for time_slot, tasks in time_slots.items():
+            if len(tasks) > 1:
+                task_list = ", ".join([f"{t[0]}'s '{t[1]}'" for t in tasks])
+                warnings.append(f"⚠️ CONFLICT at {time_slot}: {task_list}")
+
+        return warnings
+
 
 
 class PawPalApp:

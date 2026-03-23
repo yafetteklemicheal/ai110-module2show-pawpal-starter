@@ -33,10 +33,14 @@ After reviewing the design, one major missing relationship was between the owner
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
+The scheduler considers time, priority, duration, preferences, and scheduled time. I decided that time is the constraint that matters most because it defines how we go about creating the schedule. It tells us how many tasks we may or may not be able to add to the schedule. Priority is second place becuase once we know how much time we have to work with, then we can triage the tasks based on priority to take care of high priority tasks first.
+
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+The scheduler focuses on adding the most important tasks first, even if this comes at the cost of some less important tasks that could fit together better. This is reasonable because we want to make sure critical tasks like feeding or medication are always included, even if it means not doing every single optional task.
 
 ---
 

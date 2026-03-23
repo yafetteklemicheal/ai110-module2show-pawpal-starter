@@ -22,6 +22,18 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Smarter Scheduling
+
+PawPal now includes features to help owners manage their pets tasks more efficiently.
+
+Task Completion & Recurrence — Mark tasks as complete and automatically generate follow-up tasks for recurring tasks.
+
+Task Filtering — Filter tasks by completion status or by a specific pet.
+
+Time-Based Sorting — Tasks are sorted by their scheduled time of day and will appear in chronological order.
+
+Conflict Detection — When two or more tasks are scheduled at the same time, users will receive a warning so they can resolve them before the day begins.
+
 ## Getting started
 
 ### Setup

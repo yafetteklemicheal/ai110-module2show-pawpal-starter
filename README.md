@@ -56,6 +56,33 @@ python -m pytest
 
 - **Confindence Level** — ⭐⭐⭐⭐⭐
 
+## Features
+
+### Owner & Pet Management
+- **Owner Setup** — Enter an owner's name and available time in minutes to set up a personalized planning session.
+- **Multi-Pet Support** — Add multiple pets per owner, each with their own independent task list.
+
+### Task Management
+- **Task Creation** — Add tasks with a title, duration, priority, category, and optional scheduled time.
+- **Priority Levels** — Tasks are ranked by priority (high, medium, low) to ensure the most important care happens first.
+- **Task Categories** — Organize tasks by type: walking, feeding, meds, grooming, enrichment, or general.
+
+### Scheduling Algorithms
+- **Priority-Based Scheduling** — When generating a daily plan, tasks are sorted by priority (highest first) and then by duration (shortest first) to maximize what fits within the owner's available time.
+- **Time-Based Sorting** — Tasks with a scheduled time are displayed in chronological order. Tasks without a time are placed at the end of the list.
+- **Conflict Detection** — The scheduler scans all tasks and flags any two or more tasks scheduled at the same time, including conflicts across multiple pets.
+- **Daily & Weekly Recurrence** — Marking a recurring task as complete automatically generates a follow-up task for the next due date.
+- **Time Fit Validation** — Tasks that exceed the owner's remaining available time are skipped and flagged with an explanation.
+
+### Filtering & Display
+- **Task Filtering** — Filter tasks by completion status (pending or completed) and by pet name to quickly find what needs attention.
+- **Plan Explanation** — Each generated schedule includes a reasoning section explaining why each task was included or skipped.
+- **Conflict Warnings** — Live conflict alerts appear in the UI using visual warnings so owners can resolve scheduling issues before the day begins.
+
+## 📸 Demo Section
+
+<a href="pawpal_screenshot.png" target="_blank"><img src='pawpal_screenshot.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
+
 ## Getting started
 
 ### Setup

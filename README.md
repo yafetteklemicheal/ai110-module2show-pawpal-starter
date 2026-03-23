@@ -34,6 +34,28 @@ Time-Based Sorting — Tasks are sorted by their scheduled time of day and will 
 
 Conflict Detection — When two or more tasks are scheduled at the same time, users will receive a warning so they can resolve them before the day begins.
 
+## Testing PawPal+
+
+Use the following command to run the tests:
+
+```bash
+python -m pytest
+```
+
+### What the tests cover
+
+- **Task Completion** — Verifies that marking a task as complete correctly updates its status.
+
+- **Pet Task Management** — Confirms that adding a task to a pet increases the task count as expected.
+
+- **Sorting Correctness** — Ensures tasks are returned in chronological order by time of day, and that tasks without a scheduled time are placed at the end.
+
+- **Recurrence Logic** — Confirms that completing a daily or weekly task automatically generates a follow-up task with the correct next due date. Also verifies that non-recurring tasks return no follow-up task.
+
+- **Conflict Detection** — Verifies that the Scheduler flags tasks scheduled at the same time, both within a single pet and across multiple pets.
+
+- **Confindence Level** — ⭐⭐⭐⭐⭐
+
 ## Getting started
 
 ### Setup
